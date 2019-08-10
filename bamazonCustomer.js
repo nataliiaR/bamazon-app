@@ -23,9 +23,25 @@ connection.query('SELECT * FROM Products', function (error, results) {
   function getProductIDData(){
     inquirer
     .prompt({
-      name: "selectProduct",
+      name: "productID",
       type: "input",
       message: "What is the ID of the product you would like to buy?"
+  
+    })
+    .then(function(answer) {
+      // based on their answer, either call the bid or the post functions
+      console.log(answer);
+      getProductQuantityData();
+    });
+  }
+
+
+  function getProductQuantityData(){
+    inquirer
+    .prompt({
+      name: "productQuantity",
+      type: "input",
+      message: "How much items do you need?"
   
     })
     .then(function(answer) {
@@ -34,5 +50,3 @@ connection.query('SELECT * FROM Products', function (error, results) {
       
     });
   }
-
-
