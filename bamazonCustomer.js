@@ -1,29 +1,34 @@
-var mysql = require("mysql");
+var mysql = require("mysql-promise")();
 var inquirer = require("inquirer");
 
-var connection = mysql.createConnection({
-    host: "localhost",
-    port: 3306 ,
-    user: "nodeuser",
-    password: "password",
-    database: "bamazon"
+mysql.configure({
+    "host": "localhost",
+    //port: 3306 ,
+    "user": "nodeuser",
+    "password": "password",
+    "database": "bamazon"
 });
 
+  
+showProductsToCustomer();
 
+function showProductsToCustomer(){
+    mysql.query('SELECT * FROM Products').then(function () {
+  
+        return mysql.query('SELECT * FROM Products');
 
-connection.query('SELECT * FROM Products', function (error, results) {
-    if (error) throw error;
-    // `results` is an array with one element for every statement in the query:
-    console.table(results); // [{1: 1}]
-    getProductIDData();
-    connection.end();
+    }).spread(function (rows) {
+        console.table(rows);
+        getProductIDData();
+    }); 
 
-  });
+}
   
   function getProductIDData(){
+
     inquirer
     .prompt({
-      name: "productID",
+      name: "item_id",
       type: "input",
       message: "What is the ID of the product you would like to buy?"
   
@@ -31,7 +36,7 @@ connection.query('SELECT * FROM Products', function (error, results) {
     .then(function(answer) {
       // based on their answer, either call the bid or the post functions
       console.log(answer);
-      getProductQuantityData();
+      makeQuery(answer);
     });
   }
 
@@ -49,4 +54,20 @@ connection.query('SELECT * FROM Products', function (error, results) {
       console.log(answer);
       
     });
+  }
+
+
+  function makeQuery(element){
+
+
+        mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element).then(function () {
+      
+            return mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element);
+    
+        }).spread(function (rows) {
+            console.log('How many of ' + row[0].product_name + " you want you to buy? We have only" + rows[0].stock_quantity + " items.");
+            getProductQuantityData();
+        }); 
+    
+
   }
