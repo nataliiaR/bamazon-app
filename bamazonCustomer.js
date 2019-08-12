@@ -23,7 +23,40 @@ function showProductsToCustomer(){
     }); 
 
 }
-  
+
+
+  function makeProductQuanityQuery(element){
+
+
+        mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element).then(function () {
+      
+            return mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element);
+    
+        }).spread(function (rows) {
+            console.log('How many of ' + rows[0].product_name + " you want you to buy? We have only" + rows[0].stock_quantity + " items.");
+           // getProductQuantityData();
+            inquirer
+            .prompt({
+              name: "productQuantity",
+              type: "input",
+              message: "How much items do you need?"
+          
+            })
+            .then(function(answer) {
+              // based on their answer, either call the bid or the post functions
+              console.log(answer);
+              madeProductPurchase(rows[0].product_name, parseInt(rows[0].stock_quantity),parseInt(answer.productQuantity));
+              
+            });
+
+        }); 
+    
+
+  }
+
+
+  // prompts to user
+    
   function getProductIDData(){
 
     inquirer
@@ -36,12 +69,13 @@ function showProductsToCustomer(){
     .then(function(answer) {
       // based on their answer, either call the bid or the post functions
       console.log(answer);
-      makeQuery(answer);
+      makeProductQuanityQuery(answer);
+
     });
   }
 
 
-  function getProductQuantityData(){
+ /* function getProductQuantityData(){
     inquirer
     .prompt({
       name: "productQuantity",
@@ -52,22 +86,27 @@ function showProductsToCustomer(){
     .then(function(answer) {
       // based on their answer, either call the bid or the post functions
       console.log(answer);
+      madeProductPurchase(answer.productQuantity);
       
     });
-  }
+  }*/
 
+  function madeProductPurchase(productName, productQuantity, requestedQuantity){
 
-  function makeQuery(element){
-
-
-        mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element).then(function () {
-      
-            return mysql.query('SELECT product_name, stock_quantity FROM Products WHERE ?', element);
+    if(productQuantity>=requestedQuantity){
+        console.log("we have product available");
+        var updatedQuantity = productQuantity - requestedQuantity;
+        mysql.query('UPDATE Products SET stock_quantity =? WHERE product_name = ?', [updatedQuantity,productName]).then(function () {
+  
+            return mysql.query('UPDATE Products SET stock_quantity =? WHERE product_name = ?', [updatedQuantity,productName]);
     
         }).spread(function (rows) {
-            console.log('How many of ' + row[0].product_name + " you want you to buy? We have only" + rows[0].stock_quantity + " items.");
-            getProductQuantityData();
+            showProductsToCustomer();
         }); 
-    
+
+
+    }else {
+        console.log("we don't have enough product");
+    }
 
   }
