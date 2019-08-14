@@ -41,13 +41,13 @@ inquirer.prompt({
                 viewProductsforSale();
                   break;
                 case "View Low Inventory":
-                  // code block
+                viewLowInventory();
                   break;
                 case "Add to Inventory":
-                  // code block
+                addtoInventory();
                   break;
                 case "Add New Product":
-                  // code block
+                addNewProduct();
                   break;
               }
 
@@ -62,4 +62,16 @@ function viewProductsforSale(){
         console.table(rows);
 
     }); 
+}
+
+function viewLowInventory(){
+  var lowInventory = 5;
+  mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory).then(function () {
+
+      return mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory);
+
+  }).spread(function (rows) {
+      console.table(rows);
+
+  }); 
 }
