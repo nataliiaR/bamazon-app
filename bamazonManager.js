@@ -26,6 +26,7 @@ mysql.configure({
     "password": "password",
     "database": "bamazon"
 });
+
 inquirer.prompt({
               name: "productQuantity",
               type: "list",
@@ -44,7 +45,10 @@ inquirer.prompt({
                 viewLowInventory();
                   break;
                 case "Add to Inventory":
-                addtoInventory();
+
+                  addtoInventory();
+               
+              
                   break;
                 case "Add New Product":
                 addNewProduct();
@@ -54,11 +58,7 @@ inquirer.prompt({
             });
 
 function viewProductsforSale(){
-    mysql.query('SELECT * FROM Products').then(function () {
-
-        return mysql.query('SELECT * FROM Products');
-
-    }).spread(function (rows) {
+    mysql.query('SELECT * FROM Products').spread(function (rows) {
         console.table(rows);
 
     }); 
@@ -66,12 +66,41 @@ function viewProductsforSale(){
 
 function viewLowInventory(){
   var lowInventory = 5;
-  mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory).then(function () {
-
-      return mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory);
-
-  }).spread(function (rows) {
+  mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory).spread(function (rows) {
       console.table(rows);
 
   }); 
+}
+
+function addtoInventory(){
+mysql.query('SELECT * FROM Products').spread(function (rows) {
+    console.table(rows);
+    inquirer.prompt({
+      name: "productID",
+      type: "input",
+      message: "What productID would you like to add inventory to?"
+  
+    }).then(function(answer){
+      console.log("productId "+ answer.productID);
+      var productId = answer.productID
+      inquirer.prompt({
+        name: "newQuantity",
+        type: "input",
+        message: "What quantity of " + answer.productID +" would you like to add to existing inventory?"
+    
+      }).then(function(answer){
+        var additionalInventory = answer.newQuantity;
+
+        mysql.query('UPDATE Products SET stock_quantity = stock_quantity + ? WHERE item_id = ?', [additionalInventory, productId]).then(function () {
+
+          return  viewProductsforSale();
+      });
+      })
+
+    })
+
+}); 
+             
+
+
 }
