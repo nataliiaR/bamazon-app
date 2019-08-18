@@ -27,41 +27,50 @@ mysql.configure({
     "database": "bamazon"
 });
 
-inquirer.prompt({
-              name: "productQuantity",
-              type: "list",
-              choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product"],
-              message: "What action would you like to perform?"
-          
-            })
-            .then(function(answer) {
-              // based on their answer, either call the bid or the post functions
-              console.log(answer);
-              switch(answer.productQuantity) {
-                case "View Products for Sale":
-                viewProductsforSale();
-                  break;
-                case "View Low Inventory":
-                viewLowInventory();
-                  break;
-                case "Add to Inventory":
 
-                  addtoInventory();
-               
-              
-                  break;
-                case "Add New Product":
-                addNewProduct();
-                  break;
-              }
+function performAction(){
+  inquirer.prompt({
+    name: "productQuantity",
+    type: "list",
+    choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product"],
+    message: "What action would you like to perform?"
 
-            });
+  })
+  .then(function(answer) {
+    // based on their answer, either call the bid or the post functions
+    console.log(answer);
+    switch(answer.productQuantity) {
+      case "View Products for Sale":
+      viewProductsforSale();
+        break;
+      case "View Low Inventory":
+      viewLowInventory();
+        break;
+      case "Add to Inventory":
+
+        addtoInventory();
+     
+    
+        break;
+      case "Add New Product":
+      addNewProduct();
+        break;
+    }
+
+  });
+
+}
+
+
 
 function viewProductsforSale(){
     mysql.query('SELECT * FROM Products').spread(function (rows) {
         console.table(rows);
 
+    }).then(function(){
+      performAction();
     }); 
+    
 }
 
 function viewLowInventory(){
@@ -69,6 +78,8 @@ function viewLowInventory(){
   mysql.query('SELECT * FROM Products WHERE stock_quantity <= ?',lowInventory).spread(function (rows) {
       console.table(rows);
 
+  }).then(function(){
+    performAction();
   }); 
 }
 
@@ -94,13 +105,69 @@ mysql.query('SELECT * FROM Products').spread(function (rows) {
         mysql.query('UPDATE Products SET stock_quantity = stock_quantity + ? WHERE item_id = ?', [additionalInventory, productId]).then(function () {
 
           return  viewProductsforSale();
+      }).then(function(){
+        performAction();
       });
       })
 
     })
 
-}); 
-             
+})
 
 
 }
+
+
+
+function addNewProduct(){
+  mysql.query('SELECT * FROM Products').spread(function (rows) {
+      console.table(rows);
+      inquirer.prompt({
+        name: "department",
+        type: "list",
+        choices: ["grocery", "household"],
+        message: "What department would you like to add product to?"
+      }).then(function(answer){
+
+        var department = answer.department;
+        inquirer.prompt({
+          name: "productName",
+          type: "input",
+          message: "What is a new product name yoy want to add"
+      
+        }).then(function(answer){
+
+          var newProduct = answer.productName;
+
+          inquirer.prompt({
+            name: "productPrice",
+            type: "input",
+            message: "What price would you like to set for "+ newProduct+"?"
+          }).then(function(answer){
+  
+
+            var productPrice = answer.productPrice;
+            inquirer.prompt({
+            name: "productQuantity",
+            type: "input",
+            message: "What quantity would you like to set for "+ newProduct+"?"
+          }).then(function(answer){
+            var productQuantity = answer.productQuantity;
+            mysql.query('INSERT INTO Products (product_name, department_name, price, stock_quantity) VALUES (?,?,?,?)', [newProduct, department, productPrice, productQuantity]).then(function () {
+  
+            return  viewProductsforSale();
+            }).then(function(){
+          
+                performAction();
+              
+            });
+          });
+        });
+        })
+  
+      })
+  
+  })
+  
+  }
+  performAction();
